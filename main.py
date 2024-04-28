@@ -2,6 +2,7 @@ import copy
 import itertools
 from pysat.solvers import Glucose3
 from pysat.formula import CNF
+import nocnf
 
 def read_file(filename):
   grid = []
@@ -203,6 +204,7 @@ def main():
   print(g.solve())
   print(g.get_model())
   result = g.get_model()
+  matrix = copy.deepcopy(grid_copy)
 
   for b in blanks:
     if result[grid_copy[b[0]][b[1]] - 1] > 0:
@@ -215,9 +217,26 @@ def main():
 
   # Define the lists
 
-  with open('output.txt', 'w') as file:
+  with open('outputcnf.txt', 'w') as file:
     for row in grid_copy:
       file.write(', '.join(map(str, row)) + '\n')
+  
+  res, assignment = nocnf.dpll_solver(cnf.clauses, [])
+
+  if res:
+    for var, value in assignment:
+      if value:
+        matrix[blanks[var - 1][0]][blanks[var-1][1]] = 'G'
+      else:
+        matrix[blanks[var - 1][0]][blanks[var-1][1]] = 'T'
+
+    with open('output.txt', 'w') as file:
+      for row in matrix:
+        file.write(', '.join(map(str, row)) + '\n')
+    
+  else:
+    print("Unsatisfisable")
+      
 
 
 if __name__ == '__main__':
