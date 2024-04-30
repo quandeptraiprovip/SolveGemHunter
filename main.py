@@ -7,7 +7,7 @@ import nocnf
 def read_file(filename):
   grid = []
 
-  with open("input.txt", "r") as file:
+  with open(filename, "r") as file:
     for line in file:
       row = [int(x.strip()) if x.strip() != '_' else 0 for x in line.split(',')]
       grid.append(row)
@@ -176,7 +176,7 @@ def solve(grid, map):
 
 
 def main():
-  grid = read_file("input.txt")
+  grid = read_file("9x9.txt")
   grid_copy = copy.deepcopy(grid)
   cnf = CNF()
   g = Glucose3()
@@ -199,21 +199,19 @@ def main():
   # g.append_formula(cnf.clauses)
   cnf.clauses = solve(grid_copy, grid)
 
-  print(cnf.clauses)
+  # print(cnf.clauses)
   g.append_formula(cnf.clauses)
-  print(g.solve())
-  print(g.get_model())
+  g.solve()
   result = g.get_model()
   matrix = copy.deepcopy(grid_copy)
-
   for b in blanks:
-    if result[grid_copy[b[0]][b[1]] - 1] > 0:
-      grid_copy[b[0]][b[1]] = 'G'
+    if len(result) > grid_copy[b[0]][b[1]]:
+      if result[grid_copy[b[0]][b[1]] - 1] > 0:
+        grid_copy[b[0]][b[1]] = 'G'
+      else:
+        grid_copy[b[0]][b[1]] = 'T'
     else:
       grid_copy[b[0]][b[1]] = 'T'
-
-  for row in grid_copy:
-    print(row)
 
   # Define the lists
 
@@ -222,7 +220,7 @@ def main():
       file.write(', '.join(map(str, row)) + '\n')
   
   res, assignment = nocnf.dpll_solver(cnf.clauses, [])
-
+  print(assignment)
   if res:
     for var, value in assignment:
       if value:
@@ -230,13 +228,15 @@ def main():
       else:
         matrix[blanks[var - 1][0]][blanks[var-1][1]] = 'T'
 
-    with open('output.txt', 'w') as file:
-      for row in matrix:
-        file.write(', '.join(map(str, row)) + '\n')
-    
+  for b in blanks:
+    if matrix[b[0]][b[1]] != 'T' and matrix[b[0]][b[1]] != 'G':
+      matrix[b[0]][b[1]] = 'T'    
   else:
     print("Unsatisfisable")
       
+  with open('output.txt', 'w') as file:
+    for row in matrix:
+      file.write(', '.join(map(str, row)) + '\n')
 
 
 if __name__ == '__main__':
