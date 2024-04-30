@@ -176,7 +176,7 @@ def solve(grid, map):
 
 
 def main():
-  grid = read_file("9x9.txt")
+  grid = read_file("5x5.txt")
   grid_copy = copy.deepcopy(grid)
   cnf = CNF()
   g = Glucose3()
@@ -201,23 +201,24 @@ def main():
 
   # print(cnf.clauses)
   g.append_formula(cnf.clauses)
-  g.solve()
-  result = g.get_model()
+  print(g.solve())
   matrix = copy.deepcopy(grid_copy)
-  for b in blanks:
-    if len(result) > grid_copy[b[0]][b[1]]:
-      if result[grid_copy[b[0]][b[1]] - 1] > 0:
-        grid_copy[b[0]][b[1]] = 'G'
+  if g.solve() == True:
+    result = g.get_model()
+    for b in blanks:
+      if len(result) > grid_copy[b[0]][b[1]]:
+        if result[grid_copy[b[0]][b[1]] - 1] > 0:
+          grid_copy[b[0]][b[1]] = 'G'
+        else:
+          grid_copy[b[0]][b[1]] = 'T'
       else:
         grid_copy[b[0]][b[1]] = 'T'
-    else:
-      grid_copy[b[0]][b[1]] = 'T'
 
-  # Define the lists
+    # Define the lists
 
-  with open('outputcnf.txt', 'w') as file:
-    for row in grid_copy:
-      file.write(', '.join(map(str, row)) + '\n')
+    with open('outputcnf.txt', 'w') as file:
+      for row in grid_copy:
+        file.write(', '.join(map(str, row)) + '\n')
   
   res, assignment = nocnf.dpll_solver(cnf.clauses, [])
   print(assignment)
@@ -230,7 +231,8 @@ def main():
 
   for b in blanks:
     if matrix[b[0]][b[1]] != 'T' and matrix[b[0]][b[1]] != 'G':
-      matrix[b[0]][b[1]] = 'T'    
+      matrix[b[0]][b[1]] = 'T'   
+       
   else:
     print("Unsatisfisable")
       
