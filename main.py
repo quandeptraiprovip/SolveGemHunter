@@ -9,7 +9,7 @@ def read_file(filename):
 
   with open(filename, "r") as file:
     for line in file:
-      row = [int(x.strip()) if x.strip() != '_' else 0 for x in line.split(',')]
+      row = [int(x.strip()) if x.strip() != '_' else -1 for x in line.split(',')]
       grid.append(row)
 
   return grid
@@ -19,7 +19,7 @@ def get_index(grid):
   index = []
   for i in range(len(grid)):
     for j in range(len(grid[0])):
-      if grid[i][j] == 0:
+      if grid[i][j] == -1:
         blank.append((i, j))
       else:
         index.append((i, j))
@@ -150,7 +150,6 @@ def solve(grid, map):
     num = map[index[0]][index[1]]
     a = len(literals) - num
     res = []
-    print(a)
     if num == 1:
       res = exact_one(literals)
     elif num == 2:
@@ -176,7 +175,7 @@ def solve(grid, map):
 
 
 def main():
-  grid = read_file("5x5.txt")
+  grid = read_file("11x11.txt")
   grid_copy = copy.deepcopy(grid)
   cnf = CNF()
   g = Glucose3()
@@ -185,12 +184,16 @@ def main():
   count = 1
   for i in range(len(grid_copy)):
     for j in range(len(grid_copy[0])):
-      if grid_copy[i][j] == 0:
+      if grid_copy[i][j] == -1:
         grid_copy[i][j] = count
         count += 1
 
+  for row in grid_copy:
+    print(row)
+
   
   blanks, indexes = get_index(grid)
+  print(blanks)
 
   # literals = get_neighbor(0, 0, indexes, grid)
   # cnf.clauses = [[-grid_copy[e1[0]][e1[1]], -grid_copy[e2[0]][e2[1]]] for e1, e2 in itertools.combinations(literals, 2)]
@@ -198,6 +201,7 @@ def main():
   # print(cnf.clauses)
   # g.append_formula(cnf.clauses)
   cnf.clauses = solve(grid_copy, grid)
+  print(cnf.clauses)
 
   # print(cnf.clauses)
   g.append_formula(cnf.clauses)
@@ -221,7 +225,6 @@ def main():
         file.write(', '.join(map(str, row)) + '\n')
   
   res, assignment = nocnf.dpll_solver(cnf.clauses, [])
-  print(assignment)
   if res:
     for var, value in assignment:
       if value:
